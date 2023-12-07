@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """Annotating the function"""
 from typing import Tuple, List, Any
 
