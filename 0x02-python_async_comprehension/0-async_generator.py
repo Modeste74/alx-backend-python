@@ -2,10 +2,10 @@
 """defines a function asyn_generator"""
 import asyncio
 import random
-from typing import AsyncGenerator
+from typing import Generator
 
 
-async def async_generator() -> AsyncGenerator[float, None]:
+async def async_generator() -> Generator[float, None, None]:
     """Takes no args loops 10 time while awaiting 1
     second and the returns a random number between
     0 and 10"""
