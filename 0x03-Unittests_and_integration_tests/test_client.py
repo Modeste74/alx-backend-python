@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Define classes for testing functions"""
 import unittest
-from unittest.mock import patch, PropertyMock
-from parameterized import parameterized
+from unittest.mock import patch, PropertyMock, Mock
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -64,3 +65,38 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient("example")
         result = client.has_license(repo, license_key)
         self.assertEqual(result, expected_result)
+
+
+@parameterized_class(
+    ('org_payload', 'repos_payload', 'expected_repos', 'apache2_repos'),
+    TEST_PAYLOAD
+)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Integration testing"""
+    @classmethod
+    def setUpClass(cls):
+        """ prepare for testing """
+        cls.org_mock = Mock()
+        cls.org_mock.json = Mock(return_value=cls.org_payload)
+        cls.repos_mock = Mock()
+        cls.repos_mock.json = Mock(return_value=cls.repos_payload)
+        cls.get_patcher = patch('requests.get')
+        cls.get = cls.get_patcher.start()
+
+        def side_effect_for_get(url):
+            return options.get(url, cls.org_mock)
+
+        options = {cls.org_payload["repos_url"]: cls.repos_mock}
+        cls.get.side_effect = side_effect_for_get
+
+    @classmethod
+    def tearDownClass(cls):
+        """stops the patcher"""
+        cls.get_patcher.stop()
+
+    def test_public_repos_integration(self):
+        """Test public repos method"""
+        y = GithubOrgClient("x")
+
+        self.assertEqual(y.org, self.org_payload)
+        self.assertEqual(y.repos_payload, self.repos_payload)
